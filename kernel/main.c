@@ -1,5 +1,6 @@
 #include <linux/module.h>
 #include <linux/kernel.h>
+#include <linux/version.h>
 #include <linux/proc_fs.h>
 #include <linux/slab.h>
 #include <linux/uaccess.h>
@@ -37,10 +38,21 @@ static ssize_t mywrite(struct file* f, const char __user* buf, size_t count, lof
   return count;
 }
 
-struct file_operations myops = {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0)
+
+static const struct proc_ops myops = {
+  .proc_read = myread,
+  .proc_write = mywrite
+};
+
+#else
+
+static const struct file_operations myops = {
   .read = myread,
   .write = mywrite
 };
+
+#endif
 /** END OF PROC FILE */
 
 /** SYSTEM CALL HOOKS */

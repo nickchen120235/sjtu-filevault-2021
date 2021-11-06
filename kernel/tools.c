@@ -8,6 +8,7 @@
 #include "tools.h"
 
 #include <linux/kernel.h>
+#include <linux/version.h>
 #include <linux/string.h>
 #include <linux/kprobes.h>
 
@@ -46,10 +47,21 @@ int resolve_orig_address(ftrace_hook_t* hook) {
   return 0;
 }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,11,0)
+
+static void notrace ftrace_thunk(unsigned long ip, unsigned long parent_ip, struct ftrace_ops* ops, struct ftrace_regs* fregs) {
+  ftrace_hook_t* hook = container_of(ops, ftrace_hook_t, ops);
+  if (!within_module(parent_ip, THIS_MODULE)) fregs->regs.ip = (unsigned long) hook->function; // recursion prevention
+}
+
+#else
+
 static void notrace ftrace_thunk(unsigned long ip, unsigned long parent_ip, struct ftrace_ops* ops, struct pt_regs* regs) {
   ftrace_hook_t* hook = container_of(ops, ftrace_hook_t, ops);
   if (!within_module(parent_ip, THIS_MODULE)) regs->ip = (unsigned long) hook->function; // recursion prevention
 }
+
+#endif
 
 /**
  * @brief Hook the specified syscall
@@ -92,4 +104,6 @@ void remove_hook(ftrace_hook_t* hook) {
 
   err = ftrace_set_filter_ip(&hook->ops, hook->address, 1, 0);
   if (err) pr_err("filevault.tools.remove_hook: ftrace_set_filter_ip() failed: %d\n", err);
+
+  pr_info("filevault.tools.remove_hook: function hook to %s is removed\n", hook->name);
 }
