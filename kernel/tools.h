@@ -8,9 +8,13 @@
 
 #ifndef HOOK_TOOLS_H
 #define HOOK_TOOLS_H
-/**
- * Hooking
- */
+
+/** GLOBAL VARIABLES */
+#define MAX_SIZE 200
+extern char* fiievault_path;
+/** GLOBAL VARIABLES */
+
+/** HOOKING */
 #include <linux/ftrace.h>
 
 /**
@@ -60,5 +64,5 @@ typedef struct ftrace_hook {
 extern int resolve_orig_address(ftrace_hook_t* hook);
 extern int install_hook(ftrace_hook_t* hook);
 extern void remove_hook(ftrace_hook_t* hook);
-
+/** HOOKING */
 #endif

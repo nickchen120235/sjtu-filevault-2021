@@ -16,7 +16,6 @@ char* filevault_path;
 /** END OF GLOBAL VARIABLES */
 
 /** PROC FILE */
-#define MAX_SIZE 200
 int len, temp;
 static struct proc_dir_entry* filevault_proc;
 
