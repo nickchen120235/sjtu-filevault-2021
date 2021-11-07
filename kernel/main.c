@@ -16,6 +16,7 @@ char* filevault_path;
 /** END OF GLOBAL VARIABLES */
 
 /** PROC FILE */
+char* msg;
 int len, temp;
 static struct proc_dir_entry* filevault_proc;
 
@@ -28,10 +29,12 @@ static ssize_t myread(struct file* f, char __user* buf, size_t count, loff_t* po
 }
 
 static ssize_t mywrite(struct file* f, const char __user* buf, size_t count, loff_t* pos) {
-  copy_from_user(filevault_path, buf, count);
+  copy_from_user(msg, buf, count);
   len = count;
   temp = len;
-  filevault_path[strcspn(filevault_path, "\r\n")] = '\0'; // remove trailing newline
+  msg[strcspn(msg, "\r\n")] = '\0'; // remove trailing newline
+  memset(filevault_path, 0, MAX_SIZE);
+  get_fullpath(msg, filevault_path);
   pr_info("filevault: path = %s\n", filevault_path);
 
   return count;
@@ -62,6 +65,7 @@ static int __init filevault_init(void) {
   pr_info("filevault: filevault is inserted.\n");
   filevault_proc = proc_create("filevault_config", 0600, NULL, &myops);
   filevault_path = kmalloc(GFP_KERNEL, MAX_SIZE*sizeof(char));
+  msg = kmalloc(GFP_KERNEL, MAX_SIZE*sizeof(char));
   pr_info("filevault: config file is ready at /proc/filevault_config\n");
 
   /** INSTALL SYSTEM CALL HOOKS FROM HERE */
@@ -75,6 +79,7 @@ static void __exit filevault_exit(void) {
   /** REMOVE ALL SYSTEM CALL HOOKS BEFORE THIS LINE */
   proc_remove(filevault_proc);
   kfree(filevault_path);
+  kfree(msg);
   pr_info("filevault: filevault is removed.\n");
 }
 

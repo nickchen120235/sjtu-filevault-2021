@@ -9,7 +9,8 @@
 
 #include <linux/kernel.h>
 #include <linux/version.h>
-#include <linux/string.h>
+
+/** HOOKING */
 #include <linux/kprobes.h>
 
 static struct kprobe kp = {
@@ -106,4 +107,44 @@ void remove_hook(ftrace_hook_t* hook) {
   if (err) pr_err("filevault.tools.remove_hook: ftrace_set_filter_ip() failed: %d\n", err);
 
   pr_info("filevault.tools.remove_hook: function hook to %s is removed\n", hook->name);
+}
+/** HOOKING */
+
+/** PATH */
+#include <linux/string.h>
+#include <linux/sched.h>
+#include <linux/fs_struct.h>
+#include <linux/dcache.h>
+
+void get_fullpath(const char* path, char* fullpath) {
+  if (path[0] == '/') {
+    strncpy(fullpath, path, MAX_SIZE);
+    return;
+  }
+  struct dentry* tmp_dentry = current->fs->pwd.dentry;
+  char tmp_path[MAX_SIZE];
+  char local_path[MAX_SIZE];
+  memset(tmp_path, 0, MAX_SIZE);
+  memset(local_path, 0, MAX_SIZE);
+
+  // check .. case
+  if (strncmp("..", path, 2) == 0) {
+    tmp_dentry = tmp_dentry->d_parent;
+    path = path + (strlen(path) > 2 ? 3 : 2);
+  }
+  // check . case
+  if (strncmp(".", path, 1) == 0) path = path + (strlen(path) > 1 ? 2 : 1);
+
+  // traverse upwards
+  while (tmp_dentry != NULL) {
+    if (strcmp(tmp_dentry->d_name.name, "/") == 0) break; // root folder is found
+    strcpy(tmp_path, "/");
+    strncat(tmp_path, tmp_dentry->d_name.name, MAX_SIZE);
+    strncat(tmp_path, local_path, MAX_SIZE);
+    strncpy(local_path, tmp_path, MAX_SIZE);
+    tmp_dentry = tmp_dentry->d_parent;
+  }
+  strncpy(fullpath, local_path, MAX_SIZE);
+  if (strlen(path) > 0) strncat(fullpath, "/", MAX_SIZE);
+  strncat(fullpath, path, MAX_SIZE);
 }

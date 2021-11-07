@@ -65,4 +65,8 @@ extern int resolve_orig_address(ftrace_hook_t* hook);
 extern int install_hook(ftrace_hook_t* hook);
 extern void remove_hook(ftrace_hook_t* hook);
 /** HOOKING */
+
+/** PATH */
+extern void get_fullpath(const char* path, char* fullpath);
+/** PATH */
 #endif
