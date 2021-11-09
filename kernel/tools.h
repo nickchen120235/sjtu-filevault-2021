@@ -11,6 +11,7 @@
 
 /** GLOBAL VARIABLES */
 #define MAX_SIZE 200
+#define FILEVAULT_PROCESS "filevault"
 extern char* filevault_path;
 /** GLOBAL VARIABLES */
 
@@ -72,4 +73,10 @@ extern void get_fullpath(const char* path, char* fullpath);
 extern int path_is_protected(const char* path);
 
 /** PATH */
+
+/** PROCESS */
+
+extern int current_is_filevault(void);
+
+/** PROCESS */
 #endif

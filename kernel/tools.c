@@ -172,3 +172,20 @@ int path_is_protected(const char* path) {
   get_fullpath(path, fullpath);
   return strncmp(fullpath, filevault_path, len) == 0;
 }
+/** PATH */
+
+/** PROCESS */
+
+/**
+ * @brief Check if current process or its parent is filevault
+ * 
+ * @return 1 if true, otherwise 0
+ */
+int current_is_filevault(void) {
+  if (strcmp(current->comm, FILEVAULT_PROCESS) == 0) return 1;
+
+  // look at parent if direct compare failed
+  return strcmp(current->parent->comm, FILEVAULT_PROCESS) == 0;
+}
+
+/** PROCESS */
