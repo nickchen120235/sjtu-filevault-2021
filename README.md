@@ -83,6 +83,49 @@ remove_hook(&my_sys_clone);
 #### parameters
 - `hook`, type `ftrace_hook_t*`, struct to function whose hook to be removed
 
+### *function* `void get_fullpath(const char* path, char* fullpath)`
+Expand possibly relative path to absolute path
+
+Usage
+```c
+// inside /home/nick with subfolder coding
+char fullpath[MAX_SIZE];
+get_fullpath("/home/nick/coding", fullpath); // "/home/nick/coding"
+get_fullpath("./coding", fullpath);          // "/home/nick/coding"
+get_fullpath(".", fullpath);                 // "/home/nick"
+get_fullpath("..", fullpath);                // "/home"
+```
+
+#### parameter
+- `path`, type `const char*`, pointer to an absolute or a relative path **with up to ONE `.` or `..`**
+- `fullpath`, type `char*`, pointer to the buffer where the absolute path will be stored
+
+### *function* `int path_is_protected(const char* path)`
+Check whether the path is protected, by implementation the config file `/proc/filevault_config` is considered protected
+
+Usage
+```c
+// assume /home/nick is protected, currently inside /home/nick
+path_is_protected("/proc/filevault_config"); // 1, config file is protected
+path_is_protected("/home/nick");             // 1, the protected path
+path_is_protected("/home/nick/coding");      // 1, subfolders are protected
+path_is_protected("/home");                  // 0, parent folder is not protected
+path_is_protected("./coding");               // 1, subfolder case with relative path
+path_is_protected("..");                     // 0, parent folder case with relative path
+```
+
+#### parameter
+- `path`, type `const char*`, pointer to an absolute or a relative path **with up to ONE `.` or `..`**
+
+#### return
+`1` if `path` is protected, otherwise `0`
+
+### *function* `int current_is_filevault(void)`
+Check if current process or its parent is `filevault`
+
+#### return
+`1` if true, otherwise `0`
+
 ## III. Where to put code
 **Kernel module: `kernel/`**
 - helper functions: `extern` definition in `tools.h`, implementation in `tools.c`
