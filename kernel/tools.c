@@ -116,6 +116,12 @@ void remove_hook(ftrace_hook_t* hook) {
 #include <linux/fs_struct.h>
 #include <linux/dcache.h>
 
+/**
+ * @brief Expand possibly relative path to absolute path
+ * 
+ * @param path pointer to an absolute or a relative path with up to ONE . OR ..
+ * @param fullpath pointer to the buffer where the absolute path will be stored
+ */
 void get_fullpath(const char* path, char* fullpath) {
   if (path[0] == '/') {
     strncpy(fullpath, path, MAX_SIZE);
@@ -149,6 +155,12 @@ void get_fullpath(const char* path, char* fullpath) {
   strncat(fullpath, path, MAX_SIZE);
 }
 
+/**
+ * @brief Check whether the path is protected
+ * 
+ * @param path pointer to an absolute or a relative path
+ * @return 1 if path is protected, otherwise 0
+ */
 int path_is_protected(const char* path) {
   // config file case
   if (strcmp(path, "/proc/filevault_config") == 0) return 1;
