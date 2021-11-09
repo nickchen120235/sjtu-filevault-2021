@@ -148,3 +148,15 @@ void get_fullpath(const char* path, char* fullpath) {
   if (strlen(path) > 0) strncat(fullpath, "/", MAX_SIZE);
   strncat(fullpath, path, MAX_SIZE);
 }
+
+int path_is_protected(const char* path) {
+  // config file case
+  if (strcmp(path, "/proc/filevault_config") == 0) return 1;
+
+  // other cases
+  size_t len = strlen(filevault_path);
+  if (len == 0) return 0;
+  char fullpath[MAX_SIZE];
+  get_fullpath(path, fullpath);
+  return strncmp(fullpath, filevault_path, len) == 0;
+}

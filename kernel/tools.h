@@ -68,5 +68,6 @@ extern void remove_hook(ftrace_hook_t* hook);
 
 /** PATH */
 extern void get_fullpath(const char* path, char* fullpath);
+extern int path_is_protected(const char* path);
 /** PATH */
 #endif
