@@ -11,7 +11,8 @@
 
 /** GLOBAL VARIABLES */
 #define MAX_SIZE 200
-extern char* fiievault_path;
+#define FILEVAULT_PROCESS "filevault"
+extern char* filevault_path;
 /** GLOBAL VARIABLES */
 
 /** HOOKING */
@@ -65,4 +66,17 @@ extern int resolve_orig_address(ftrace_hook_t* hook);
 extern int install_hook(ftrace_hook_t* hook);
 extern void remove_hook(ftrace_hook_t* hook);
 /** HOOKING */
+
+/** PATH */
+
+extern void get_fullpath(const char* path, char* fullpath);
+extern int path_is_protected(const char* path);
+
+/** PATH */
+
+/** PROCESS */
+
+extern int current_is_filevault(void);
+
+/** PROCESS */
 #endif

@@ -9,7 +9,8 @@
 
 #include <linux/kernel.h>
 #include <linux/version.h>
-#include <linux/string.h>
+
+/** HOOKING */
 #include <linux/kprobes.h>
 
 static struct kprobe kp = {
@@ -107,3 +108,84 @@ void remove_hook(ftrace_hook_t* hook) {
 
   pr_info("filevault.tools.remove_hook: function hook to %s is removed\n", hook->name);
 }
+/** HOOKING */
+
+/** PATH */
+#include <linux/string.h>
+#include <linux/sched.h>
+#include <linux/fs_struct.h>
+#include <linux/dcache.h>
+
+/**
+ * @brief Expand possibly relative path to absolute path
+ * 
+ * @param path pointer to an absolute or a relative path with up to ONE . OR ..
+ * @param fullpath pointer to the buffer where the absolute path will be stored
+ */
+void get_fullpath(const char* path, char* fullpath) {
+  if (path[0] == '/') {
+    strncpy(fullpath, path, MAX_SIZE);
+    return;
+  }
+  struct dentry* tmp_dentry = current->fs->pwd.dentry;
+  char tmp_path[MAX_SIZE];
+  char local_path[MAX_SIZE];
+  memset(tmp_path, 0, MAX_SIZE);
+  memset(local_path, 0, MAX_SIZE);
+
+  // check .. case
+  if (strncmp("..", path, 2) == 0) {
+    tmp_dentry = tmp_dentry->d_parent;
+    path = path + (strlen(path) > 2 ? 3 : 2);
+  }
+  // check . case
+  if (strncmp(".", path, 1) == 0) path = path + (strlen(path) > 1 ? 2 : 1);
+
+  // traverse upwards
+  while (tmp_dentry != NULL) {
+    if (strcmp(tmp_dentry->d_name.name, "/") == 0) break; // root folder is found
+    strcpy(tmp_path, "/");
+    strncat(tmp_path, tmp_dentry->d_name.name, MAX_SIZE);
+    strncat(tmp_path, local_path, MAX_SIZE);
+    strncpy(local_path, tmp_path, MAX_SIZE);
+    tmp_dentry = tmp_dentry->d_parent;
+  }
+  strncpy(fullpath, local_path, MAX_SIZE);
+  if (strlen(path) > 0) strncat(fullpath, "/", MAX_SIZE);
+  strncat(fullpath, path, MAX_SIZE);
+}
+
+/**
+ * @brief Check whether the path is protected
+ * 
+ * @param path pointer to an absolute or a relative path
+ * @return 1 if path is protected, otherwise 0
+ */
+int path_is_protected(const char* path) {
+  // config file case
+  if (strcmp(path, "/proc/filevault_config") == 0) return 1;
+
+  // other cases
+  size_t len = strlen(filevault_path);
+  if (len == 0) return 0;
+  char fullpath[MAX_SIZE];
+  get_fullpath(path, fullpath);
+  return strncmp(fullpath, filevault_path, len) == 0;
+}
+/** PATH */
+
+/** PROCESS */
+
+/**
+ * @brief Check if current process or its parent is filevault
+ * 
+ * @return 1 if true, otherwise 0
+ */
+int current_is_filevault(void) {
+  if (strcmp(current->comm, FILEVAULT_PROCESS) == 0) return 1;
+
+  // look at parent if direct compare failed
+  return strcmp(current->parent->comm, FILEVAULT_PROCESS) == 0;
+}
+
+/** PROCESS */
