@@ -11,7 +11,7 @@
 
 /** GLOBAL VARIABLES */
 #define MAX_SIZE 200
-extern char* fiievault_path;
+extern char* filevault_path;
 /** GLOBAL VARIABLES */
 
 /** HOOKING */
