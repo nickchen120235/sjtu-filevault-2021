@@ -11,7 +11,7 @@
 #include <sys/io.h>
 
 // #define TMP_KEY_PATH "/tmp/filebox_crypto_key"
-#define CONFIG_PATH "/etc/filebox.cnf"
+#define CONFIG_PATH "/proc/filevault_config"
 #define PASSWD_MAX_LENGTH 21
 #define CMD_MAX_LENGTH 80
 #define PATH_MAX_LENGTH 256
