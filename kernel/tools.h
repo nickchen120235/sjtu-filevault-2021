@@ -62,7 +62,6 @@ typedef struct ftrace_hook {
   struct ftrace_ops ops; // for ftrace
 } ftrace_hook_t;
 
-extern int resolve_orig_address(ftrace_hook_t* hook);
 extern int install_hook(ftrace_hook_t* hook);
 extern void remove_hook(ftrace_hook_t* hook);
 /** HOOKING */
@@ -71,6 +70,7 @@ extern void remove_hook(ftrace_hook_t* hook);
 
 extern void get_fullpath(const char* path, char* fullpath);
 extern int path_is_protected(const char* path);
+extern char* copy_filename_from_userspace(const char __user* filename);
 
 /** PATH */
 
