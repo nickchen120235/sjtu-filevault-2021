@@ -115,6 +115,8 @@ void remove_hook(ftrace_hook_t* hook) {
 #include <linux/sched.h>
 #include <linux/fs_struct.h>
 #include <linux/dcache.h>
+#include <linux/slab.h>
+#include <linux/uaccess.h>
 
 /**
  * @brief Expand possibly relative path to absolute path
@@ -172,6 +174,20 @@ int path_is_protected(const char* path) {
   get_fullpath(path, fullpath);
   return strncmp(fullpath, filevault_path, len) == 0;
 }
+
+char* copy_filename_from_userspace(const char __user* filename) {
+  char* kernel_filename;
+  kernel_filename = kmalloc(GFP_KERNEL, MAX_SIZE*sizeof(char));
+  if (!kernel_filename) return NULL;
+
+  if (copy_from_user(kernel_filename, filename, MAX_SIZE) < 0) {
+    kfree(kernel_filename);
+    return NULL;
+  }
+
+  return kernel_filename;
+}
+
 /** PATH */
 
 /** PROCESS */
@@ -185,7 +201,10 @@ int current_is_filevault(void) {
   if (strcmp(current->comm, FILEVAULT_PROCESS) == 0) return 1;
 
   // look at parent if direct compare failed
-  return strcmp(current->parent->comm, FILEVAULT_PROCESS) == 0;
+  if (strcmp(current->parent->comm, FILEVAULT_PROCESS) == 0) return 1;
+
+  // look at parent's parent
+  return strcmp(current->parent->parent->comm, FILEVAULT_PROCESS) == 0;
 }
 
 /** PROCESS */
